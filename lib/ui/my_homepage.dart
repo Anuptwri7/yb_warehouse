@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,23 +30,67 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
 class _HomePageState extends State<HomePage> {
-  String ? name;
+  String? name;
   int numNotific = 10;
+
+  late ConnectivityResult result;
+  late StreamSubscription subscription;
+  var isConnected = false;
+
+  checkInternet() async {
+    result = await Connectivity().checkConnectivity();
+    if (result != ConnectivityResult.none) {
+      isConnected = true;
+    } else {
+      isConnected = false;
+      showDialogBox();
+    }
+    setState(() {});
+  }
+
+  showDialogBox() {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+              title: Image.asset(
+                "assets/images/noInternet-removebg-preview.png",
+                color: Colors.red,
+              ),
+              content: Text("Please check your internet connection and retry"),
+              actions: [
+                CupertinoButton(
+                    child: Text("Retry"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      checkInternet();
+                    })
+              ],
+            ));
+  }
+
+  startStreaming() {
+    subscription = Connectivity().onConnectivityChanged.listen((event) async {
+      checkInternet();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    startStreaming();
     final data = Provider.of<NotificationClass>(context, listen: false);
     data.fetchCount(context);
-
   }
 
   @override
   Widget build(BuildContext context) {
     final count = Provider.of<NotificationClass>(context);
-    return  Scaffold(
-      appBar:AppBar(
+
+    return Scaffold(
+      appBar: AppBar(
         actions: [
           // const Icon(
           //   Icons.search,
@@ -106,23 +153,21 @@ class _HomePageState extends State<HomePage> {
             },
             child: Stack(
               children: [
-
-
                 IconButton(
                   icon: const Icon(
                     Icons.logout,
                     color: Colors.grey,
                     size: 30,
                   ),
-                  onPressed: ()async{
+                  onPressed: () async {
                     final SharedPreferences sharedPreferences =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
 
                     sharedPreferences.clear();
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MyApp()));
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) => MyApp()));
                   },
                 ),
-
               ],
             ),
           ),
@@ -130,13 +175,14 @@ class _HomePageState extends State<HomePage> {
             width: 15,
           ),
         ],
-
         title: Row(
-          children:  [
-
+          children: [
             Text(
               "YB WAREHOUSE",
-              style: TextStyle(color: Colors.blueGrey, fontSize: 15,fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.blueGrey,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -144,91 +190,102 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top:10.0,left: 20,right:20 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Container(
-                    // height: 350,
-                    // width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      boxShadow:[
-                        BoxShadow(
-                          color: Color(0x155665df),
-                          spreadRadius: 5,
-                          blurRadius: 17,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _poButtonDesign(Icons.arrow_drop_up, StringConst.poIn,
-                                goToPage: () => goToPage(context, PendingOrderInList())),
-                            kHeightVeryBig,
-                            _poButtonDesign(Icons.arrow_drop_down, StringConst.poDrop,
-                                goToPage: () => (OpenDialogCustomer(context))),
-                          ],
-                        ),
-                        kHeightVeryBig,
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _poButtonDesign(Icons.arrow_drop_up, StringConst.poOut,
-                                goToPage: () => goToPage(context, PickOrder())),
-                            kHeightVeryBig,
-                            _poButtonDesign(Icons.arrow_drop_down, StringConst.poAudit,
-                                goToPage: () => goToPage(context, AuditList())),
-                          ],
-                        ),
-                        kHeightVeryBig,
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _poButtonDesign(Icons.arrow_drop_up, StringConst.locationShifting,
-                                goToPage: () => goToPage(context, LocationShifting())),
-                            kHeightVeryBig,
-                            _poButtonDesign(Icons.arrow_drop_down, StringConst.info,
-                                goToPage: () => (OpenDialogInfo(context))),
-                          ],
-                        ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0, left: 20, right: 20),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Container(
+                  // height: 350,
+                  // width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x155665df),
+                        spreadRadius: 5,
+                        blurRadius: 17,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _poButtonDesign(Icons.arrow_drop_up, StringConst.poIn,
+                              goToPage: () =>
+                                  goToPage(context, PendingOrderInList())),
+                          kHeightVeryBig,
+                          _poButtonDesign(
+                              Icons.arrow_drop_down, StringConst.poDrop,
+                              goToPage: () => (OpenDialogCustomer(context))),
+                        ],
+                      ),
+                      kHeightVeryBig,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _poButtonDesign(
+                              Icons.arrow_drop_up, StringConst.poOut,
+                              goToPage: () => goToPage(context, PickOrder())),
+                          kHeightVeryBig,
+                          _poButtonDesign(
+                              Icons.arrow_drop_down, StringConst.poAudit,
+                              goToPage: () => goToPage(context, AuditList())),
+                        ],
+                      ),
+                      kHeightVeryBig,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _poButtonDesign(
+                              Icons.arrow_drop_up, StringConst.locationShifting,
+                              goToPage: () =>
+                                  goToPage(context, LocationShifting())),
+                          kHeightVeryBig,
+                          _poButtonDesign(
+                              Icons.arrow_drop_down, StringConst.info,
+                              goToPage: () => (OpenDialogInfo(context))),
+                        ],
+                      ),
 
-                        kHeightVeryBig,
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _poButtonDesign(Icons.arrow_drop_up, StringConst.chalan,
-                                goToPage: () => goToPage(context, ChalanMainUI())),
-                            kHeightVeryBig,
-                            _poButtonDesign(Icons.arrow_drop_down, StringConst.sale,
-                                goToPage: () => goToPage(context, SalesMainUI())),
-                          ],
-                        ),
-                        kHeightVeryBig,
-                        _poButtonDesign(Icons.arrow_drop_up, StringConst.transfer,
-                            goToPage: () => goToPage(context, TransferListPage())),
-                        kHeightVeryBig,
-                        _poButtonDesign(Icons.arrow_drop_up, StringConst.openingStock,
-                            goToPage: () => goToPage(context, OpeningStockList())),
-                      ],
-                    ),
+                      kHeightVeryBig,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _poButtonDesign(
+                              Icons.arrow_drop_up, StringConst.chalan,
+                              goToPage: () =>
+                                  goToPage(context, ChalanMainUI())),
+                          kHeightVeryBig,
+                          _poButtonDesign(
+                              Icons.arrow_drop_down, StringConst.sale,
+                              goToPage: () => goToPage(context, SalesMainUI())),
+                        ],
+                      ),
+                      kHeightVeryBig,
+                      // _poButtonDesign(Icons.arrow_drop_up, StringConst.transfer,
+                      //     goToPage: () => goToPage(context, TransferListPage())),
+                      kHeightVeryBig,
+                      _poButtonDesign(
+                          Icons.arrow_drop_up, StringConst.openingStock,
+                          goToPage: () =>
+                              goToPage(context, OpeningStockList())),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-
+      ),
     );
   }
 
@@ -306,7 +363,9 @@ class _HomePageState extends State<HomePage> {
           ),
           child: Column(
             children: [
-              SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               Icon(
                 buttonIcon,
                 size: 20,
@@ -324,17 +383,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future OpenDialogCustomer(BuildContext context) =>
-      showDialog(
+  Future OpenDialogCustomer(BuildContext context) => showDialog(
         barrierColor: Colors.black38,
-
         context: context,
-
         builder: (context) => Dialog(
           backgroundColor: Colors.indigo.shade50,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15)
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.topCenter,
@@ -351,16 +406,18 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _poButtonDesignDailog(Icons.arrow_circle_down_sharp, StringConst.bulkDrop,
-                                goToPage: () => goToPage(context, BulkPODrop())),
+                            _poButtonDesignDailog(Icons.arrow_circle_down_sharp,
+                                StringConst.bulkDrop,
+                                goToPage: () =>
+                                    goToPage(context, BulkPODrop())),
                             kHeightVeryBig,
-                            _poButtonDesignDailog(Icons.arrow_drop_down, StringConst.singleDrop,
+                            _poButtonDesignDailog(
+                                Icons.arrow_drop_down, StringConst.singleDrop,
                                 goToPage: () => goToPage(context, PODrop())),
                             kHeightVeryBig,
                             kHeightVeryBig,
                           ],
                         ),
-
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -370,47 +427,36 @@ class _HomePageState extends State<HomePage> {
                               scrollDirection: Axis.vertical,
                               physics: ScrollPhysics(),
                               shrinkWrap: true,
-                              children: [
-
-                              ],
+                              children: [],
                             ),
-
-
                           ],
                         ),
-
-
                       ],
                     ),
                   ),
-
                 ),
               ),
               Positioned(
-                  top:-35,
-
+                  top: -35,
                   child: CircleAvatar(
-                    child: Icon(Icons.ac_unit_sharp,size: 40,),
+                    child: Icon(
+                      Icons.ac_unit_sharp,
+                      size: 40,
+                    ),
                     radius: 40,
-
                   )),
-
             ],
           ),
         ),
-
       );
-  Future OpenDialogInfo(BuildContext context) =>
-      showDialog(
+
+  Future OpenDialogInfo(BuildContext context) => showDialog(
         barrierColor: Colors.black38,
-
         context: context,
-
         builder: (context) => Dialog(
           backgroundColor: Colors.indigo.shade50,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15)
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.topCenter,
@@ -427,16 +473,18 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _poButtonDesignDailog(Icons.arrow_circle_down_sharp, StringConst.getPackInfo,
+                            _poButtonDesignDailog(Icons.arrow_circle_down_sharp,
+                                StringConst.getPackInfo,
                                 goToPage: () => goToPage(context, PackInfo())),
                             kHeightVeryBig,
-                            _poButtonDesignDailog(Icons.arrow_drop_down, StringConst.serialInfo,
-                                goToPage: () => goToPage(context, SerialInfoPage())),
+                            _poButtonDesignDailog(
+                                Icons.arrow_drop_down, StringConst.serialInfo,
+                                goToPage: () =>
+                                    goToPage(context, SerialInfoPage())),
                             kHeightVeryBig,
                             kHeightVeryBig,
                           ],
                         ),
-
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -446,35 +494,26 @@ class _HomePageState extends State<HomePage> {
                               scrollDirection: Axis.vertical,
                               physics: ScrollPhysics(),
                               shrinkWrap: true,
-                              children: [
-
-                              ],
+                              children: [],
                             ),
-
-
                           ],
                         ),
-
-
                       ],
                     ),
                   ),
-
                 ),
               ),
               Positioned(
-                  top:-35,
-
+                  top: -35,
                   child: CircleAvatar(
-                    child: Icon(Icons.ac_unit_sharp,size: 40,),
+                    child: Icon(
+                      Icons.ac_unit_sharp,
+                      size: 40,
+                    ),
                     radius: 40,
-
                   )),
-
             ],
           ),
         ),
-
       );
 }
-

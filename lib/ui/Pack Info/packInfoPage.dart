@@ -71,6 +71,16 @@ class _PackInfoState extends State<PackInfo> {
                 "${_packCodesListPackInfo.isEmpty ? "Please scan Pack code" : _packCodesListPackInfo}"),
           ),
           kHeightMedium,
+          RoundedButtons(
+              color: _packCodesListPackInfo.isEmpty?Colors.indigo.shade200: Colors.indigo,
+              buttonText: "New Pack Info",
+              onTap: (){
+
+               setState(() {
+                 _packCodesListPackInfo.clear();
+               });
+              }
+          ),
           kHeightMedium,
 
           _packCodesListPackInfo.isNotEmpty
@@ -84,25 +94,23 @@ class _PackInfoState extends State<PackInfo> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Item : ${snapshot.data.itemName}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold),),
-                              Text('Pack Code : ${snapshot.data.code}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
+                              Text('Item : ${snapshot.data.itemName==null?"N/A":snapshot.data.itemName}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold),),
+                              Text('Pack Code : ${snapshot.data.code==null?"N/A":snapshot.data.code}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
                               Text(
-                                  'Location Code : ${snapshot.data.locationCode}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
+                                  'Location Code : ${snapshot.data.locationCode==null?"N/A":snapshot.data.locationCode}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
                               Text(
-                                  'Batch No: ${snapshot.data.batchNo}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
+                                  'Batch No: ${snapshot.data.batchNo==null?"N/A":snapshot.data.batchNo}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
                               Text(
-                                  'Supplier Name: ${snapshot.data.supplierName}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
+                                  'Supplier Name: ${snapshot.data.supplierName==null?"N/A":snapshot.data.supplierName}',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
 
                               Row(
                                 children: [
                                   Text(
                                       'Remaining Items:',style: TextStyle(fontSize: 16,fontWeight:FontWeight.bold)),
                                   Container(
-
                                     color: Colors.indigo,
                                     child:Text("${snapshot.data.packTypeDetailCodes.length.toString()}",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
                                   )
-
                                 ],
                               ),
                               Container(

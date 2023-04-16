@@ -1,17 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:yb_warehouse/ui/location%20Shift/service/locationShiftService.dart';
 import 'package:yb_warehouse/ui/pick/ui/pickup_order_save_codes.dart';
 import 'package:zebra_datawedge/zebra_datawedge.dart';
-
 import '../../../consts/buttons_const.dart';
 import '../../../consts/methods_const.dart';
 import '../../../consts/string_const.dart';
@@ -269,9 +266,11 @@ class _LocationShiftingState extends State<LocationShifting> {
   Future LocationShiftingService() async {
     final SharedPreferences sharedPreferences =
     await SharedPreferences.getInstance();
+    String finalUrl = sharedPreferences.getString("subDomain").toString();
     log(StringConst.baseUrl + StringConst.locationShiftingApi);
     final response = await http.post(
-        Uri.parse(StringConst.baseUrl + StringConst.locationShiftingApi),
+        Uri.parse("https://${finalUrl}${StringConst.locationShiftingApi}" ),
+
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

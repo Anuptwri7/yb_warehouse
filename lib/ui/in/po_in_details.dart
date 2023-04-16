@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
@@ -13,9 +14,12 @@ import 'package:yb_warehouse/ui/in/model/inModel.dart';
 import 'package:yb_warehouse/ui/in/po_in_details.dart';
 import 'package:yb_warehouse/ui/login/login_screen.dart';
 
+import 'code_scanner.dart';
+import 'dropRecItems.dart';
+
 class PurchaseOrdersDetails extends StatefulWidget {
   int id;
-   PurchaseOrdersDetails({Key? key,required this.id}) : super(key: key);
+  PurchaseOrdersDetails({Key? key,required this.id}) : super(key: key);
 
   @override
   State<PurchaseOrdersDetails> createState() => _PurchaseOrdersDetailsState();
@@ -120,12 +124,53 @@ class _PurchaseOrdersDetailsState extends State<PurchaseOrdersDetails> {
         itemCount: data['purchase_order_details'].length,
         // physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index) {
-                log(data['purchase_order_details'].length.toString());
+          log("jhgfjhg"+data.toString());
+          log("jhgfjhg"+data['purchase_order_details'][index]['received_qty'].toString());
           return GestureDetector(
-            onTap: (){},
+            onTap: ()=>{
+              data['purchase_order_details'][index]['received_qty']==data['purchase_order_details'][index]['qty']?Fluttertoast.showToast(msg: "Already Received"):
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>ScanToDrop(
+                data['purchase_order_details'][index]['id'],
+                data['purchase_order_details'][index]['id'],
+                double.parse(data['purchase_order_details'][index]['qty']),
+                data['purchase_order_details'][index]['packing_type_detail']['pack_qty'],
+                data['grand_total'],
+                data['purchase_order_details'][index]['item_taxable'],
+                data['purchase_order_details'][index]['net_amount'],
+                data['purchase_order_details'][index]['purchase_cost'],
+                data['purchase_order_details'][index]['tax_rate'],
+                data['purchase_order_details'][index]['tax_amount'],
+                data['purchase_order_details'][index]['item_discountable'],
+                data['purchase_order_details'][index]['discount_rate'],
+                data['purchase_order_details'][index]['discount_amount'],
+                data['purchase_order_details'][index]['cancelled'],
+                data['purchase_order_details'][index]['item'],
+                data['purchase_order_details'][index]['packing_type'],
+                data['purchase_order_details'][index]['packing_type_detail']['id'],
+                data['currency'],
+                data["discount_scheme"]==null?0: data['discount_scheme']['id'],
+                data['end_user_name'],
+                data['purchase_order_details'][index]['packing_type_details_itemwise'][index]['app_type'],
+                data['shipment_terms'],
+                data['attendee'],
+                data['order_no'],
+                data['sub_total'],
+                data['supplier']['id'],
+                data['id'],
+                data['purchase_order_details'][index]['packing_type_details_itemwise'][index]['device_type'],
+                data['currency_exchange_rate'],
+                data['terms_of_payment'],
+              )))
+            },
+
+            /*
+
+  String termsOfPayment;
+            */
+
             child: Card(
               margin: kMarginPaddSmall,
-              color: Colors.white,
+              color:data['purchase_order_details'][index]['received_qty']==data['purchase_order_details'][index]['qty']?Colors.grey.shade400:  Colors.white,
               elevation: kCardElevation,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.0)),
@@ -148,7 +193,7 @@ class _PurchaseOrdersDetailsState extends State<PurchaseOrdersDetails> {
                           height: 30,
                           width: 150,
                           decoration: BoxDecoration(
-                            color: const Color(0xffeff3ff),
+                            color: Color(0xffeff3ff),
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: const [
                               BoxShadow(
@@ -185,7 +230,7 @@ class _PurchaseOrdersDetailsState extends State<PurchaseOrdersDetails> {
                           ),
                           child: Center(
                               child: Text(
-                                "${data['purchase_order_details'][index]['packing_type_details_itemwise'][index]['packing_type_name'].toString()}",
+                                "${data['purchase_order_details'][index]['packing_type_details_itemwise'][0]['packing_type_name'].toString()}",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               )),
                         ),

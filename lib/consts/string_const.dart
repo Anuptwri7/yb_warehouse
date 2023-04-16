@@ -97,7 +97,7 @@ class StringConst {
   static String pickupDetail= "/api/v1/transfer-app/pack-type?purchase_detail=";
   static String getSerialCode= "/api/v1/transfer-app/pack-type-detail?";
   static String postPickupTransfer= "/api/v1/transfer-app/pickup-transfer";
-
+  static String receivePurchaseOrder = '/api/v1/purchase-app/receive-purchase-order';
   /*For Headers*/
   static const contentType = 'application/json; charset=UTF-8';
   static const xRequestedWith = 'XMLHttpRequest';

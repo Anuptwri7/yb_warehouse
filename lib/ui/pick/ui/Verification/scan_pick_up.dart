@@ -233,7 +233,7 @@ class _ScanForVerifiedState extends State<ScanForVerified> {
                 _scanedSerialNo.add(_currentScannedCode);
                 _packCodesList.remove(_currentScannedCode);
               } else {
-                displayToast(msg: "Wrong Scanned Plz Check Barcode");
+                // displayToast(msg: "Wrong Scanned Plz Check Barcode");
               }
             } else {
               log("message error");
